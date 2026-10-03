@@ -1,0 +1,31 @@
+### VS Code "REST Client" ya da JetBrains HTTP Client ile çalıştırılabilir
+@base = http://localhost:3000
+
+### Kayıt
+# @name kayit
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{ "email": "ilker@ornek.com", "name": "İlker", "password": "guclu-parola-123" }
+
+###
+@token = {{kayit.response.body.token}}
+
+### Proje oluştur
+# @name proje
+POST {{base}}/projects
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "Müşteri sitesi", "color": "#22c55e" }
+
+### Görev ekle
+POST {{base}}/projects/{{proje.response.body.id}}/tasks
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "title": "Ana sayfa tasarımı", "priority": 3, "due_date": "2026-10-10" }
+
+### Yapılacaklar, önceliğe göre
+GET {{base}}/tasks?status=todo&sort=-priority&limit=10
+Authorization: Bearer {{token}}
