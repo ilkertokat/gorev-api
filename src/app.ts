@@ -19,6 +19,12 @@ const Register = z.object({
   password: z.string().min(8, "Parola en az 8 karakter olmalı").max(128),
 });
 const Login = z.object({ email: z.string().trim().toLowerCase(), password: z.string() });
+/** YYYY-AA-GG biçiminde ve takvimde gerçekten olan bir gün mü? ("2026-02-30", "2026-13-01" reddedilir) */
+export const isCalendarDate = (v: string) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
+  const d = new Date(`${v}T00:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === v;
+};
 const ProjectInput = z.object({
   name: z.string().trim().min(1, "Proje adı gerekli").max(100),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Renk #RRGGBB biçiminde olmalı").optional(),
@@ -29,7 +35,7 @@ const TaskInput = z.object({
   description: z.string().max(5000).optional(),
   status: Status.optional(),
   priority: z.number().int().min(1, "Öncelik 1-3 arası olmalı").max(3, "Öncelik 1-3 arası olmalı").optional(),
-  due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Tarih YYYY-AA-GG biçiminde olmalı").nullable().optional(),
+  due_date: z.string().refine(isCalendarDate, "Tarih YYYY-AA-GG biçiminde geçerli bir gün olmalı").nullable().optional(),
 });
 const TaskQuery = z.object({
   status: Status.optional(),

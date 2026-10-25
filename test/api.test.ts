@@ -117,6 +117,14 @@ describe("projects & tasks", () => {
     const bad = await srv.call("POST", `/projects/${p.body.id}/tasks`, { title: "", priority: 9, due_date: "20/10/2026" }, t);
     assert.equal(bad.status, 400);
     assert.equal(bad.body.error.details.length, 3);
+    for (const due_date of ["2026-02-30", "2026-13-01", "2025-02-29", "2026-00-10"]) {
+      const res = await srv.call("POST", `/projects/${p.body.id}/tasks`, { title: "Tarih", due_date }, t);
+      assert.equal(res.status, 400, due_date);
+      assert.equal(res.body.error.details[0].field, "due_date");
+    }
+    const leap = await srv.call("POST", `/projects/${p.body.id}/tasks`, { title: "Artık yıl", due_date: "2028-02-29" }, t);
+    assert.equal(leap.status, 201);
+    assert.equal((await srv.call("PATCH", `/tasks/${leap.body.id}`, { due_date: "2028-04-31" }, t)).status, 400);
     assert.equal((await srv.call("POST", "/projects", "{bozuk json", t)).body.error.code, "invalid_json");
     assert.equal((await srv.call("GET", "/tasks/abc", undefined, t)).status, 404);
     assert.equal((await srv.call("GET", "/olmayan", undefined, t)).status, 404);
